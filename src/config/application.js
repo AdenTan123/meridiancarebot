@@ -81,7 +81,7 @@ const appConfig = {
     welcome: true,                  
 
     tickets: true,                  
-    giveaways: true,                
+    giveaways: false,               
     birthday: true,                 
     counter: true,                  
 

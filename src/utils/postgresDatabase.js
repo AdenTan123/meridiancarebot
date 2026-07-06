@@ -258,18 +258,6 @@ class PostgreSQLDatabase {
                 FOREIGN KEY (user_id) REFERENCES ${pgConfig.tables.users}(id) ON DELETE CASCADE
             )`,
             
-            `CREATE TABLE IF NOT EXISTS ${pgConfig.tables.giveaways} (
-                id SERIAL PRIMARY KEY,
-                guild_id VARCHAR(20),
-                message_id VARCHAR(20) NOT NULL,
-                data JSONB NOT NULL,
-                ends_at TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (guild_id) REFERENCES ${pgConfig.tables.guilds}(id) ON DELETE CASCADE,
-                UNIQUE(guild_id, message_id)
-            )`,
-            
             `CREATE TABLE IF NOT EXISTS ${pgConfig.tables.tickets} (
                 guild_id VARCHAR(20),
                 channel_id VARCHAR(20) PRIMARY KEY,
@@ -403,8 +391,6 @@ class PostgreSQLDatabase {
             `CREATE INDEX IF NOT EXISTS idx_guild_users_user_id ON ${pgConfig.tables.guild_users}(user_id)`,
             `CREATE INDEX IF NOT EXISTS idx_birthdays_guild_id ON ${pgConfig.tables.birthdays}(guild_id)`,
             `CREATE INDEX IF NOT EXISTS idx_birthdays_month_day ON ${pgConfig.tables.birthdays}(month, day)`,
-            `CREATE INDEX IF NOT EXISTS idx_giveaways_guild_id ON ${pgConfig.tables.giveaways}(guild_id)`,
-            `CREATE INDEX IF NOT EXISTS idx_giveaways_ends_at ON ${pgConfig.tables.giveaways}(ends_at)`,
             `CREATE INDEX IF NOT EXISTS idx_tickets_guild_id ON ${pgConfig.tables.tickets}(guild_id)`,
             `CREATE INDEX IF NOT EXISTS idx_tickets_expires_at ON ${pgConfig.tables.tickets}(expires_at)`,
             `CREATE INDEX IF NOT EXISTS idx_afk_status_guild_id ON ${pgConfig.tables.afk_status}(guild_id)`,
@@ -455,7 +441,6 @@ class PostgreSQLDatabase {
                 { name: 'update_invite_tracking_updated_at', table: pgConfig.tables.invite_tracking },
                 { name: 'update_guild_users_updated_at', table: pgConfig.tables.guild_users },
                 { name: 'update_birthdays_updated_at', table: pgConfig.tables.birthdays },
-                { name: 'update_giveaways_updated_at', table: pgConfig.tables.giveaways },
                 { name: 'update_tickets_updated_at', table: pgConfig.tables.tickets },
                 { name: 'update_afk_status_updated_at', table: pgConfig.tables.afk_status },
             ];
@@ -713,9 +698,6 @@ class PostgreSQLDatabase {
             if (parts[2] === 'birthdays') {
                 return { type: 'guild_birthdays', guildId: parts[1], fullKey: key };
             }
-            if (parts[2] === 'giveaways') {
-                return { type: 'guild_giveaways', guildId: parts[1], fullKey: key };
-            }
             if (parts[2] === 'welcome') {
                 return { type: 'welcome_config', guildId: parts[1], fullKey: key };
             }
@@ -767,13 +749,6 @@ class PostgreSQLDatabase {
                         birthdays[row.user_id] = { month: row.month, day: row.day };
                     });
                     return birthdays;
-                
-                case 'guild_giveaways':
-                    const giveawayResult = await this.pool.query(
-                        `SELECT data FROM ${pgConfig.tables.giveaways} WHERE guild_id = $1`,
-                        [parsedKey.guildId]
-                    );
-                    return giveawayResult.rows.map(row => row.data);
                 
                 case 'welcome_config':
                     const welcomeResult = await this.pool.query(
@@ -874,32 +849,6 @@ class PostgreSQLDatabase {
                             `INSERT INTO ${pgConfig.tables.birthdays} (guild_id, user_id, month, day) 
                              VALUES ($1, $2, $3, $4)`,
                             [parsedKey.guildId, userId, birthday.month, birthday.day]
-                        );
-                    }
-                    return true;
-                
-                case 'guild_giveaways':
-                    await this.pool.query(
-                        `INSERT INTO ${pgConfig.tables.guilds} (id, created_at) 
-                         VALUES ($1, CURRENT_TIMESTAMP) 
-                         ON CONFLICT (id) DO NOTHING`,
-                        [parsedKey.guildId]
-                    );
-                    
-                    await this.pool.query(`DELETE FROM ${pgConfig.tables.giveaways} WHERE guild_id = $1`, [parsedKey.guildId]);
-
-                    const giveaways = Array.isArray(value)
-                        ? value
-                        : (value && typeof value === 'object' ? Object.values(value) : []);
-
-                    for (const giveaway of giveaways) {
-                        if (!giveaway?.messageId) {
-                            continue;
-                        }
-                        await this.pool.query(
-                            `INSERT INTO ${pgConfig.tables.giveaways} (guild_id, message_id, data, ends_at) 
-                             VALUES ($1, $2, $3, $4)`,
-                            [parsedKey.guildId, giveaway.messageId, giveaway, giveaway.endsAt ? new Date(giveaway.endsAt) : null]
                         );
                     }
                     return true;
@@ -1089,10 +1038,6 @@ class PostgreSQLDatabase {
                 
                 case 'guild_birthdays':
                     await this.pool.query(`DELETE FROM ${pgConfig.tables.birthdays} WHERE guild_id = $1`, [parsedKey.guildId]);
-                    return true;
-                
-                case 'guild_giveaways':
-                    await this.pool.query(`DELETE FROM ${pgConfig.tables.giveaways} WHERE guild_id = $1`, [parsedKey.guildId]);
                     return true;
                 
                 case 'welcome_config':

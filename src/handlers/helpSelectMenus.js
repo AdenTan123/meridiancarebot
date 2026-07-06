@@ -27,7 +27,6 @@ const CATEGORY_ICONS = {
     Utility: "🔧",
     Ticket: "🎫",
     Welcome: "👋",
-    Giveaway: "🎉",
     Counter: "🔢",
     Tools: "🛠️",
     Search: "🔍",

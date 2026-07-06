@@ -83,10 +83,6 @@ export const botConfig = {
       black: "#000000",
 
       // Feature-specific colors.
-      giveaway: {
-        active: "#57F287",
-        ended: "#ED4245",
-      },
       ticket: {
         open: "#57F287",
         claimed: "#FAA61A",
@@ -215,31 +211,6 @@ export const botConfig = {
 
     // Channel ID where ticket logs are sent.
     logChannel: null,
-  },
-
-  // =========================
-  // GIVEAWAY SETTINGS
-  // =========================
-  giveaways: {
-    // Default giveaway duration in milliseconds.
-    // 86400000 = 24 hours.
-    defaultDuration: 86400000,
-
-    // Allowed winner count range.
-    minimumWinners: 1,
-    maximumWinners: 10,
-
-    // Allowed giveaway duration range in milliseconds.
-    // 300000 = 5 minutes.
-    minimumDuration: 300000,
-    // 2592000000 = 30 days.
-    maximumDuration: 2592000000,
-
-    // Role IDs allowed to host giveaways.
-    allowedRoles: [],
-
-    // Role IDs that bypass giveaway restrictions.
-    bypassRoles: [],
   },
 
   // =========================
@@ -416,7 +387,6 @@ export const botConfig = {
 
     // Community engagement systems.
     tickets: true,
-    giveaways: true,
     birthday: true,
     counter: true,
 
