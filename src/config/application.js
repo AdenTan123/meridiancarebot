@@ -1,7 +1,6 @@
 import { fileURLToPath } from "url";
 import path from "path";
 import botConfig, { validateConfig } from "./bot.js";
-import { shopConfig as shop } from "./shop/index.js";
 import { pgConfig } from "./postgres.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,10 +24,6 @@ const appConfig = {
     guildId: process.env.GUILD_ID,
     multiGuild: process.env.MULTI_GUILD === 'true',
 
-    shop: {
-      ...botConfig.shop,
-      ...shop,
-    },
   },
 
   // PostgreSQL configuration - Primary production database
@@ -70,11 +65,9 @@ const appConfig = {
     },
   },
 
-  shop,
-
   features: {
     
-    economy: true,                  
+    economy: false,                 
     leveling: true,                 
     moderation: true,               
     logging: true,                  

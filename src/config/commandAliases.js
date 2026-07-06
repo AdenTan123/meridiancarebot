@@ -4,22 +4,6 @@
  */
 
 export const commandAliases = {
-    'bal': 'balance',
-    'money': 'balance',
-    'cash': 'balance',
-
-    'dep': 'deposit',
-    'with': 'withdraw',
-    'work': 'work',
-    'daily': 'daily',
-    'gamble': 'gamble',
-    'bet': 'gamble',
-    'rob': 'rob',
-    'crime': 'crime',
-    'pay': 'pay',
-    'give': 'pay',
-    'send': 'pay',
-
     'ping': 'ping',
     'help': 'help',
     'h': 'help',
@@ -40,12 +24,6 @@ export const commandAliases = {
     'leaderboard': 'leaderboard',
     'lb': 'leaderboard',
     'top': 'leaderboard',
-
-    'shop': 'shop',
-    'buy': 'buy',
-    'inventory': 'inventory',
-    'inv': 'inventory',
-    'items': 'inventory',
 
     'user': 'userinfo',
     'avatar': 'avatar',

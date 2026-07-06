@@ -85,17 +85,6 @@ const createTables = async (client) => {
       UNIQUE(user_id, guild_id)
     )`,
 
-    `CREATE TABLE IF NOT EXISTS user_economy (
-      id SERIAL PRIMARY KEY,
-      user_id VARCHAR(255) NOT NULL,
-      guild_id VARCHAR(255) NOT NULL,
-      balance BIGINT DEFAULT 0,
-      bank BIGINT DEFAULT 0,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE(user_id, guild_id)
-    )`,
-
     `CREATE TABLE IF NOT EXISTS birthdays (
       id SERIAL PRIMARY KEY,
       user_id VARCHAR(255) NOT NULL,
@@ -203,7 +192,6 @@ const createIndexes = async (client) => {
 
   const indexes = [
     'CREATE INDEX IF NOT EXISTS idx_user_levels_guild ON user_levels(guild_id)',
-    'CREATE INDEX IF NOT EXISTS idx_user_economy_guild ON user_economy(guild_id)',
     'CREATE INDEX IF NOT EXISTS idx_tickets_guild ON tickets(guild_id)',
     'CREATE INDEX IF NOT EXISTS idx_giveaways_guild ON giveaways(guild_id)',
     'CREATE INDEX IF NOT EXISTS idx_audit_logs_guild ON audit_logs(guild_id)',
@@ -232,10 +220,6 @@ const createTriggers = async (client) => {
     {
       table: 'user_levels',
       name: 'update_user_levels_timestamp'
-    },
-    {
-      table: 'user_economy',
-      name: 'update_user_economy_timestamp'
     },
     {
       table: 'birthdays',

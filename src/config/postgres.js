@@ -11,7 +11,6 @@ const configuredTables = {
     welcome_configs: 'welcome_configs',
     leveling_configs: 'leveling_configs',
     user_levels: 'user_levels',
-    economy: 'economy',
     invite_tracking: 'invite_tracking',
     application_roles: 'application_roles',
     verification_audit: 'verification_audit',
@@ -29,7 +28,6 @@ const allowedTableIdentifiers = new Set([
     'welcome_configs',
     'leveling_configs',
     'user_levels',
-    'economy',
     'invite_tracking',
     'application_roles',
     'verification_audit',
@@ -137,8 +135,6 @@ export const pgConfig = {
         cache: 1800,
         
         guildConfig: null,
-        
-        economy: null,
         
         leveling: null,
         

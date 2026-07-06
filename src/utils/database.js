@@ -24,7 +24,6 @@ export {
     getMemberInvitesKey,
     getInviteUsesKey,
     getFakeAccountKey,
-    getEconomyKey,
     getAFKKey,
     getWelcomeConfigKey,
     getLevelingKey,
@@ -60,7 +59,6 @@ import {
     getJoinToCreateConfigKey,
     getJoinToCreateChannelsKey,
     getWelcomeConfigKey,
-    getEconomyKey,
     getAFKKey,
 } from './database/keys.js';
 

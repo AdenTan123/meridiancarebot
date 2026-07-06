@@ -25,10 +25,6 @@ export function getFakeAccountKey(guildId, userId) {
     return `guild:${guildId}:fake_account:${userId}`;
 }
 
-export function getEconomyKey(guildId, userId) {
-    return `guild:${guildId}:economy:${userId}`;
-}
-
 export function getAFKKey(guildId, userId) {
     return `guild:${guildId}:afk:${userId}`;
 }
