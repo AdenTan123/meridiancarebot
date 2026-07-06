@@ -1,3 +1,4 @@
+import { mongoDb } from '../mongoDatabase.js';
 import { pgDb } from '../postgresDatabase.js';
 import { MemoryStorage } from '../memoryStorage.js';
 import { logger } from '../logger.js';
@@ -16,6 +17,25 @@ class DatabaseWrapper {
     async initialize() {
         if (this.initialized) {
             return;
+        }
+
+        const mongoUri = process.env.MONGODB_URI;
+
+        if (mongoUri) {
+            try {
+                logger.info('Attempting to connect to MongoDB...');
+                const mongoConnected = await mongoDb.connect();
+                if (mongoConnected) {
+                    this.db = mongoDb;
+                    this.connectionType = 'mongodb';
+                    this.degradedReason = null;
+                    logger.info('✅ MongoDB Database initialized - using persistent database');
+                    this.initialized = true;
+                    return;
+                }
+            } catch (error) {
+                logger.warn('MongoDB connection failed:', error.message);
+            }
         }
 
         try {
@@ -49,9 +69,9 @@ class DatabaseWrapper {
         this.db = new MemoryStorage();
         this.useFallback = true;
         this.connectionType = 'memory';
-        this.degradedReason = 'POSTGRES_UNAVAILABLE';
+        this.degradedReason = mongoUri ? 'MONGO_AND_POSTGRES_UNAVAILABLE' : 'POSTGRES_UNAVAILABLE';
         logger.warn('⚠️ DATABASE DEGRADED MODE ENABLED - Using in-memory storage (data will be lost on restart)');
-        logger.warn('⚠️ Please check PostgreSQL connection and restart the bot when fixed');
+        logger.warn('⚠️ Please check database connection and restart the bot when fixed');
         this.initialized = true;
         this.degradedModeWarningShown = true;
     }
@@ -148,7 +168,7 @@ export const db = new DatabaseWrapper();
 
 export async function initializeDatabase() {
     try {
-        logger.info('Initializing Database (PostgreSQL > Memory fallback)...');
+        logger.info('Initializing Database (MongoDB > PostgreSQL > Memory fallback)...');
         await db.initialize();
         logger.info('✅ Database initialized');
         return { db };

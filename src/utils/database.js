@@ -1,5 +1,6 @@
 // database.js — facade re-exporting split modules for backward compatibility
 
+import { mongoDb } from './mongoDatabase.js';
 import { pgDb } from './postgresDatabase.js';
 import { logger } from './logger.js';
 import { BotConfig } from '../config/bot.js';
@@ -69,8 +70,13 @@ export async function insertVerificationAudit(record) {
             await db.initialize();
         }
 
-        if (db.isAvailable() && typeof pgDb.insertVerificationAudit === 'function') {
-            return await pgDb.insertVerificationAudit(record);
+        if (db.isAvailable()) {
+            if (db.connectionType === 'mongodb' && typeof mongoDb.insertVerificationAudit === 'function') {
+                return await mongoDb.insertVerificationAudit(record);
+            }
+            if (typeof pgDb.insertVerificationAudit === 'function') {
+                return await pgDb.insertVerificationAudit(record);
+            }
         }
 
         const key = `verification:audit:${record.guildId}`;
@@ -153,7 +159,7 @@ export async function setGuildConfig(client, guildId, config, context = {}) {
     }
 }
 
-export { pgDb };
+export { mongoDb, pgDb };
 
 export const getMessage = (key, replacements = {}) => {
     let message = BotConfig.messages[key] || key;
