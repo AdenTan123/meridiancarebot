@@ -94,9 +94,7 @@ const appConfig = {
     tools: true,                    
     utility: true,                  
     community: true,                
-    fun: true,                      
-
-    music: true,
+    fun: true,
   },
 
   env: process.env.NODE_ENV || "development",
