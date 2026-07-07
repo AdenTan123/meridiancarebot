@@ -6,6 +6,7 @@ import {
   EmbedBuilder,
   Colors,
   ChannelType,
+  SlashCommandBuilder,
 } from 'discord.js';
 import { getMarizmaConfig, setMarizmaConfig } from '../utils/database.js';
 import { shutdownServer } from '../utils/marizmaApi.js';
@@ -35,6 +36,48 @@ async function purgeChannel(channel) {
     }
   } while (fetched.size === 100);
 }
+
+export default {
+  data: new SlashCommandBuilder()
+    .setName('marizma')
+    .setDescription('Marizma Roblox server integration')
+    .addSubcommand(sub =>
+      sub.setName('setup').setDescription('Configure Marizma integration settings'),
+    )
+    .addSubcommand(sub =>
+      sub
+        .setName('startup')
+        .setDescription('Start an SSU session')
+        .addUserOption(o => o.setName('host').setDescription('Session host').setRequired(true))
+        .addUserOption(o => o.setName('cohost').setDescription('Session co-host').setRequired(false)),
+    )
+    .addSubcommand(sub =>
+      sub.setName('shutdown').setDescription('Shutdown the current SSU session'),
+    ),
+
+  async execute(interaction) {
+    const sub = interaction.options.getSubcommand();
+
+    if (sub === 'setup') {
+      return handleSetup(interaction);
+    }
+
+    const cfg = await getMarizmaConfig(interaction.guildId);
+
+    if (!cfg || !cfg.apiKey || !cfg.baseUrl) {
+      await interaction.reply({ content: '❌ Please run `/marizma setup` first.', ephemeral: true });
+      return;
+    }
+
+    if (sub === 'startup') {
+      return handleStartup(interaction, cfg);
+    }
+
+    if (sub === 'shutdown') {
+      return handleShutdown(interaction, cfg);
+    }
+  },
+};
 
 async function handleSetup(interaction) {
   const modal = new ModalBuilder()
@@ -93,40 +136,7 @@ async function handleSetup(interaction) {
   await interaction.showModal(modal);
 }
 
-async function handleSetupModalSubmit(interaction) {
-  const guildId = interaction.guildId;
-  const raw = interaction.fields;
-
-  const config = {
-    apiKey: raw.getTextInputValue('apiKey'),
-    baseUrl: raw.getTextInputValue('baseUrl'),
-    modRoles: raw.getTextInputValue('modRoles') || null,
-    startupTemplate: raw.getTextInputValue('startupTemplate') || 'SSU is now live! Host: {host}, Co-host: {cohost}',
-    shutdownTemplate: raw.getTextInputValue('shutdownTemplate') || 'The SSU session has ended. Thank you for participating!',
-    sessionsChannel: raw.getTextInputValue('sessionsChannel') || null,
-  };
-
-  if (config.sessionsChannel) {
-    const ch = await interaction.guild.channels.fetch(config.sessionsChannel).catch(() => null);
-    if (!ch || ch.type !== ChannelType.GuildText) {
-      await interaction.reply({ content: '❌ Sessions Channel ID is invalid or not a text channel.', ephemeral: true });
-      return;
-    }
-  }
-
-  await setMarizmaConfig(guildId, config);
-  await interaction.reply({ content: '✅ Marizma configuration saved successfully!', ephemeral: true });
-}
-
-async function handleStartup(interaction) {
-  const guildId = interaction.guildId;
-  const cfg = await getMarizmaConfig(guildId);
-
-  if (!cfg || !cfg.apiKey || !cfg.baseUrl) {
-    await interaction.reply({ content: '❌ Please run `/marizma setup` first.', ephemeral: true });
-    return;
-  }
-
+async function handleStartup(interaction, cfg) {
   const host = interaction.options.getUser('host');
   const cohost = interaction.options.getUser('cohost');
   const channelId = cfg.sessionsChannel;
@@ -159,15 +169,7 @@ async function handleStartup(interaction) {
   await interaction.editReply({ content: '✅ SSU startup complete. Channel purged and messages sent.' });
 }
 
-async function handleShutdown(interaction) {
-  const guildId = interaction.guildId;
-  const cfg = await getMarizmaConfig(guildId);
-
-  if (!cfg || !cfg.apiKey || !cfg.baseUrl) {
-    await interaction.reply({ content: '❌ Please run `/marizma setup` first.', ephemeral: true });
-    return;
-  }
-
+async function handleShutdown(interaction, cfg) {
   const channelId = cfg.sessionsChannel;
   if (!channelId) {
     await interaction.reply({ content: '❌ No Sessions Channel configured.', ephemeral: true });
@@ -199,25 +201,4 @@ async function handleShutdown(interaction) {
   }
 
   await interaction.editReply({ content: '✅ Shutdown process completed.' });
-}
-
-export async function execute(interaction) {
-  const sub = interaction.options.getSubcommand();
-
-  switch (sub) {
-    case 'setup':
-      return handleSetup(interaction);
-    case 'startup':
-      return handleStartup(interaction);
-    case 'shutdown':
-      return handleShutdown(interaction);
-    default:
-      await interaction.reply({ content: 'Unknown subcommand.', ephemeral: true });
-  }
-}
-
-export async function handleModal(interaction) {
-  if (interaction.customId === 'marizma_setup_modal') {
-    return handleSetupModalSubmit(interaction);
-  }
 }
