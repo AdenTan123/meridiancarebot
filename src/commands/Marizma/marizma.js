@@ -8,8 +8,8 @@ import {
   ChannelType,
   SlashCommandBuilder,
 } from 'discord.js';
-import { getMarizmaConfig, setMarizmaConfig } from '../utils/database.js';
-import { shutdownServer } from '../utils/marizmaApi.js';
+import { getMarizmaConfig } from '../../utils/database.js';
+import { shutdownServer } from '../../utils/marizmaApi.js';
 
 function fillTemplate(template, host, cohost) {
   return template
