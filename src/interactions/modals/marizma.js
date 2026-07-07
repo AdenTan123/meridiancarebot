@@ -1,16 +1,57 @@
-import { ChannelType } from 'discord.js';
-import { setMarizmaConfig } from '../../utils/database.js';
+import {
+  EmbedBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ActionRowBuilder,
+  ChannelType,
+} from 'discord.js';
+import { getMarizmaConfig, setMarizmaConfig } from '../../utils/database.js';
 
-export default {
+const step1Handler = {
   name: 'marizma_setup_modal',
   async execute(interaction) {
     const guildId = interaction.guildId;
     const raw = interaction.fields;
 
-    const config = {
+    const partial = {
       apiKey: raw.getTextInputValue('apiKey'),
       baseUrl: raw.getTextInputValue('baseUrl'),
-      modRoles: raw.getTextInputValue('modRoles') || null,
+    };
+
+    await setMarizmaConfig(guildId, partial);
+
+    const embed = new EmbedBuilder()
+      .setColor(0x5865f2)
+      .setTitle('✅ Step 1 Complete')
+      .setDescription('API connection details saved. Click below to configure messages and channel.')
+      .addFields(
+        { name: 'API Key', value: `\`${partial.apiKey.slice(0, 8)}…\``, inline: true },
+        { name: 'Base URL', value: partial.baseUrl, inline: true },
+      )
+      .setFooter({ text: 'Marizma Setup' });
+
+    const button = new ButtonBuilder()
+      .setCustomId('marizma_continue_setup')
+      .setLabel('Continue Setup →')
+      .setStyle(ButtonStyle.Primary);
+
+    await interaction.reply({
+      embeds: [embed],
+      components: [new ActionRowBuilder().addComponents(button)],
+      ephemeral: true,
+    });
+  },
+};
+
+const step2Handler = {
+  name: 'marizma_setup_modal_step2',
+  async execute(interaction) {
+    const guildId = interaction.guildId;
+    const raw = interaction.fields;
+    const existing = await getMarizmaConfig(guildId);
+
+    const config = {
+      ...(existing || {}),
       startupTemplate: raw.getTextInputValue('startupTemplate') || 'SSU is now live! Host: {host}, Co-host: {cohost}',
       shutdownTemplate: raw.getTextInputValue('shutdownTemplate') || 'The SSU session has ended. Thank you for participating!',
       sessionsChannel: raw.getTextInputValue('sessionsChannel') || null,
@@ -25,6 +66,20 @@ export default {
     }
 
     await setMarizmaConfig(guildId, config);
-    await interaction.reply({ content: '✅ Marizma configuration saved successfully!', ephemeral: true });
+
+    const embed = new EmbedBuilder()
+      .setColor(0x57f287)
+      .setTitle('✅ Setup Complete')
+      .setDescription('Marizma is fully configured and ready to use.')
+      .addFields(
+        { name: 'SSU Startup Message', value: config.startupTemplate, inline: false },
+        { name: 'SSU Shutdown Message', value: config.shutdownTemplate, inline: false },
+        { name: 'Sessions Channel', value: config.sessionsChannel ? `<#${config.sessionsChannel}>` : 'Not set', inline: true },
+      )
+      .setFooter({ text: 'Marizma Setup' });
+
+    await interaction.reply({ embeds: [embed], ephemeral: true });
   },
 };
+
+export default [step1Handler, step2Handler];

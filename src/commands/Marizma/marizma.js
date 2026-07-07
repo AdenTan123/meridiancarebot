@@ -4,8 +4,9 @@ import {
   TextInputStyle,
   ActionRowBuilder,
   EmbedBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   Colors,
-  ChannelType,
   SlashCommandBuilder,
 } from 'discord.js';
 import { getMarizmaConfig } from '../../utils/database.js';
@@ -82,55 +83,24 @@ export default {
 async function handleSetup(interaction) {
   const modal = new ModalBuilder()
     .setCustomId('marizma_setup_modal')
-    .setTitle('Marizma Configuration');
-
-  const apiKeyInput = new TextInputBuilder()
-    .setCustomId('apiKey')
-    .setLabel('API Key')
-    .setStyle(TextInputStyle.Short)
-    .setRequired(true);
-
-  const baseUrlInput = new TextInputBuilder()
-    .setCustomId('baseUrl')
-    .setLabel('Base URL')
-    .setStyle(TextInputStyle.Short)
-    .setPlaceholder('https://api.yourmarizmainstance.com')
-    .setRequired(true);
-
-  const modRolesInput = new TextInputBuilder()
-    .setCustomId('modRoles')
-    .setLabel('Moderation Roles (comma-separated IDs)')
-    .setStyle(TextInputStyle.Short)
-    .setRequired(false);
-
-  const startupTemplateInput = new TextInputBuilder()
-    .setCustomId('startupTemplate')
-    .setLabel('SSU Startup Message Template')
-    .setStyle(TextInputStyle.Paragraph)
-    .setPlaceholder('SSU has started! Host: {host}, Co-host: {cohost}')
-    .setRequired(false);
-
-  const shutdownTemplateInput = new TextInputBuilder()
-    .setCustomId('shutdownTemplate')
-    .setLabel('SSU Shutdown Message Template')
-    .setStyle(TextInputStyle.Paragraph)
-    .setPlaceholder('The SSU session has ended. Thanks for playing!')
-    .setRequired(false);
-
-  const sessionsChannelInput = new TextInputBuilder()
-    .setCustomId('sessionsChannel')
-    .setLabel('Sessions Channel ID')
-    .setStyle(TextInputStyle.Short)
-    .setPlaceholder('123456789012345678')
-    .setRequired(false);
+    .setTitle('Marizma Setup — Step 1');
 
   modal.addComponents(
-    new ActionRowBuilder().addComponents(apiKeyInput),
-    new ActionRowBuilder().addComponents(baseUrlInput),
-    new ActionRowBuilder().addComponents(modRolesInput),
-    new ActionRowBuilder().addComponents(startupTemplateInput),
-    new ActionRowBuilder().addComponents(shutdownTemplateInput),
-    new ActionRowBuilder().addComponents(sessionsChannelInput),
+    new ActionRowBuilder().addComponents(
+      new TextInputBuilder()
+        .setCustomId('apiKey')
+        .setLabel('API Key')
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true),
+    ),
+    new ActionRowBuilder().addComponents(
+      new TextInputBuilder()
+        .setCustomId('baseUrl')
+        .setLabel('Base URL')
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder('https://api.yourmarizmainstance.com')
+        .setRequired(true),
+    ),
   );
 
   await interaction.showModal(modal);
