@@ -64,3 +64,7 @@ export function getJoinToCreateConfigKey(guildId) {
 export function getJoinToCreateChannelsKey(guildId) {
     return `guild:${guildId}:jointocreate:channels`;
 }
+
+export function getMarizmaConfigKey(guildId) {
+    return `guild:${guildId}:marizma`;
+}

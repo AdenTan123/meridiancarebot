@@ -34,6 +34,7 @@ export {
     getApplicationKey,
     getJoinToCreateConfigKey,
     getJoinToCreateChannelsKey,
+    getMarizmaConfigKey,
 } from './database/keys.js';
 
 export {
@@ -1112,6 +1113,28 @@ export async function getTemporaryChannelInfo(client, guildId, channelId) {
     } catch (error) {
         logger.error(`Error getting temporary channel info for guild ${guildId}:`, error);
         return null;
+    }
+}
+
+export async function getMarizmaConfig(guildId) {
+    const key = getMarizmaConfigKey(guildId);
+    try {
+        const config = await getFromDb(key, null);
+        return config;
+    } catch (error) {
+        logger.error(`Error getting marizma config for guild ${guildId}:`, error);
+        return null;
+    }
+}
+
+export async function setMarizmaConfig(guildId, config) {
+    const key = getMarizmaConfigKey(guildId);
+    try {
+        await setInDb(key, config);
+        return true;
+    } catch (error) {
+        logger.error(`Error saving marizma config for guild ${guildId}:`, error);
+        return false;
     }
 }
 
