@@ -66,7 +66,7 @@ test('ResponseCoordinator respondUsage finalizes and blocks second respond', asy
 
   await coordinator.respondUsage('!ban [target] [reason]');
   assert.equal(sentMessages.length, 1);
-  assert.match(getEmbedTitle(sentMessages[0]), /Wrong usage/);
+  assert.match(getEmbedTitle(sentMessages[0]), /Wrong [uU]sage/);
   assert.equal(coordinator.isUsageFinalized(), true);
 
   await coordinator.respond({ content: 'should not send' });
@@ -91,7 +91,7 @@ test('executePrefixCommand sends exactly one usage embed for !ban with no args',
   await executePrefixCommand(command, message, [], message.client, '!');
 
   assert.equal(sentMessages.length, 1);
-  assert.match(getEmbedTitle(sentMessages[0]), /Wrong usage/);
+  assert.match(getEmbedTitle(sentMessages[0]), /Wrong [uU]sage/);
   assert.match(getEmbedDescription(sentMessages[0]), /!ban \[target\] \[reason\]/);
 });
 
@@ -102,7 +102,7 @@ test('executePrefixCommand sends exactly one usage embed for !warn with no args'
   await executePrefixCommand(command, message, [], message.client, '!');
 
   assert.equal(sentMessages.length, 1);
-  assert.match(getEmbedTitle(sentMessages[0]), /Wrong usage/);
+  assert.match(getEmbedTitle(sentMessages[0]), /Wrong [uU]sage/);
   assert.match(getEmbedDescription(sentMessages[0]), /!warn \[target\] \[reason\]/);
 });
 

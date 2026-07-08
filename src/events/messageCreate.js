@@ -130,7 +130,11 @@ async function handleCountingGame(message, client) {
 
     if (validType === 'number' || validType === 'math') {
       if (sameUser) {
-        await message.react('❌').catch(() => {});
+        if (config.onlyNumbers) {
+          await message.delete().catch(() => {});
+        } else {
+          await message.react('❌').catch(() => {});
+        }
         await saveCountingGameConfig(client, message.guild.id, {
           ...config, nextNumber: 1, lastUserId: null, currentStreak: 0,
         });
@@ -144,8 +148,11 @@ async function handleCountingGame(message, client) {
     }
 
     if (validType === 'invalid') {
-      await message.delete().catch(() => {});
-      await message.react('❌').catch(() => {});
+      if (config.onlyNumbers) {
+        await message.delete().catch(() => {});
+      } else {
+        await message.react('❌').catch(() => {});
+      }
       await saveCountingGameConfig(client, message.guild.id, {
         ...config, nextNumber: 1, lastUserId: null, currentStreak: 0,
       });

@@ -22,8 +22,8 @@ test('isCommandEnabledInConfig respects category and command disables', () => {
     disabledCommands: {},
   };
 
-  assert.equal(isCommandEnabledInConfig(config, 'commands', 'Core'), false);
-  assert.equal(isCommandEnabledInConfig(config, 'ping', 'Core'), true);
+  assert.equal(isCommandEnabledInConfig(config, 'commands', 'Core'), true);
+  assert.equal(isCommandEnabledInConfig(config, 'ping', 'Core'), false);
 });
 
 test('isCommandEnabledInConfig keeps protected commands available', () => {

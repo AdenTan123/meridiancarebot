@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { parsePrefixCommand, mapArgumentsToOptions } from '../src/utils/prefixParser.js';
 import { resolveCommandAlias, resolveSubcommandAlias } from '../src/config/commandAliases.js';
 import { getPrefixRestriction } from '../src/config/prefixRestrictions.js';
-import countCommand from '../src/commands/Fun/count.js';
+import countCommand from '../src/commands/Count/count.js';
 import helpCommand from '../src/commands/Core/help.js';
 import ticketCommand from '../src/commands/Ticket/ticket.js';
 import birthdayCommand from '../src/commands/Birthday/birthday.js';

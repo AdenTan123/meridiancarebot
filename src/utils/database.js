@@ -61,6 +61,7 @@ import {
     getJoinToCreateChannelsKey,
     getWelcomeConfigKey,
     getAFKKey,
+    getMarizmaConfigKey,
 } from './database/keys.js';
 
 export async function insertVerificationAudit(record) {

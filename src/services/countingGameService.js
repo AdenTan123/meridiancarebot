@@ -1,4 +1,5 @@
 import { logger } from '../utils/logger.js';
+import { evaluateMathExpression } from '../utils/safeMathParser.js';
 
 const COUNTING_GAME_KEY_PREFIX = 'countingGame:';
 
@@ -115,26 +116,19 @@ const COUNTING_SYSTEMS = {
     description: 'Use a math expression that equals the next number, like 4*4=16',
     toString: (n) => `${n}`,
     parse: (value) => {
-      const expression = value.replace(/\s+/g, '');
-      if (expression.length === 0) return null;
-      const sanitized = expression.replace(/\^/g, '**');
-      if (!/^[0-9+\-*/().=**]+$/.test(sanitized)) return null;
-      const parts = sanitized.split('=');
-      try {
-        const evaluate = (expr) => {
-          if (!expr || /[^0-9+\-*/().]/.test(expr)) return null;
-          // eslint-disable-next-line no-new-func
-          return Function(`"use strict"; return (${expr});`)();
-        };
+      const parts = value.split('=');
+      if (parts.length > 2) return null;
 
+      try {
         if (parts.length === 1) {
-          return Number(evaluate(parts[0]));
+          const result = evaluateMathExpression(parts[0]);
+          return typeof result === 'number' && !isNaN(result) ? result : null;
         }
         if (parts.length === 2) {
-          const left = evaluate(parts[0]);
-          const right = evaluate(parts[1]);
+          const left = evaluateMathExpression(parts[0]);
+          const right = evaluateMathExpression(parts[1]);
           if (left === right) {
-            return Number(left);
+            return typeof left === 'number' && !isNaN(left) ? left : null;
           }
           return null;
         }
@@ -284,18 +278,23 @@ export function validateCountingAttempt(content, config) {
   const trimmed = content.trim();
   if (!trimmed) return null;
 
-  const plain = parseInt(trimmed, 10);
-  const isExactNumber = String(plain) === trimmed;
+  const system = COUNTING_SYSTEMS[config.system] ? config.system : 'decimal';
+  const parser = COUNTING_SYSTEMS[system];
+  const parsedValue = parser.parse(trimmed);
 
-  if (isExactNumber) {
-    if (plain === config.nextNumber) return 'number';
-    return 'invalid'; // wrong number
+  if (parsedValue !== null) {
+    if (parsedValue === config.nextNumber) return 'number';
+    return 'invalid'; // wrong count
   }
 
   if (config.mathExpressions) {
     const mathSystem = COUNTING_SYSTEMS.math;
-    if (mathSystem.parse(trimmed) === config.nextNumber) return 'math';
-    if (/^[0-9+\-*/().=^ ]+$/.test(trimmed) && trimmed.includes('=')) return 'invalid'; // attempted math
+    const mathParsed = mathSystem.parse(trimmed);
+    if (mathParsed === config.nextNumber) return 'math';
+    // If it looks like a math expression (e.g. contains numbers/operators and/or a '=' sign) but didn't match the correct count
+    if (/^[0-9+\-*/().=^ ]+$/.test(trimmed) && (trimmed.includes('=') || /[+\-*/%^()]/.test(trimmed))) {
+      return 'invalid';
+    }
   }
 
   return null; // not a counting attempt
