@@ -14,8 +14,8 @@ import { isCommandEnabled } from '../services/commandAccessService.js';
 import {
   getCountingGameConfig,
   saveCountingGameConfig,
-  isValidCountingMessage,
   recordCorrectCount,
+  validateCountingAttempt,
 } from '../services/countingGameService.js';
 
 const MESSAGE_XP_RATE_LIMIT_ATTEMPTS = 12;
@@ -125,28 +125,40 @@ async function handleCountingGame(message, client) {
     }
 
     const content = message.content.trim();
-    const validCount = isValidCountingMessage(content, config);
-    const invalidAttempt = !validCount || message.author.id === config.lastUserId;
+    const validType = validateCountingAttempt(content, config);
+    const sameUser = message.author.id === config.lastUserId;
 
-    if (invalidAttempt) {
-      await message.delete().catch(() => {});
-      await saveCountingGameConfig(client, message.guild.id, {
-        ...config,
-        nextNumber: 1,
-        lastUserId: null,
-        currentStreak: 0,
-      });
+    if (validType === 'number' || validType === 'math') {
+      if (sameUser) {
+        await message.react('❌').catch(() => {});
+        await saveCountingGameConfig(client, message.guild.id, {
+          ...config, nextNumber: 1, lastUserId: null, currentStreak: 0,
+        });
+        await message.channel.send(`❌ **Count broken by ${message.author}!** (You can't count twice in a row.) The next number is **1**.`);
+        return true;
+      }
 
-      const failureMessage = await message.channel.send(`❌ Count broken by <@${message.author.id}>. The sequence has been reset to **1**.`);
-      setTimeout(() => {
-        failureMessage.delete().catch(() => {});
-      }, 10000);
-
+      await message.react('✅').catch(() => {});
+      await recordCorrectCount(client, message.guild.id, message.author.id);
       return true;
     }
 
-    await recordCorrectCount(client, message.guild.id, message.author.id);
-    return true;
+    if (validType === 'invalid') {
+      await message.delete().catch(() => {});
+      await message.react('❌').catch(() => {});
+      await saveCountingGameConfig(client, message.guild.id, {
+        ...config, nextNumber: 1, lastUserId: null, currentStreak: 0,
+      });
+      await message.channel.send(`❌ **Count broken by ${message.author}!** The next number is **1**.`);
+      return true;
+    }
+
+    if (config.onlyNumbers) {
+      await message.delete().catch(() => {});
+      return true;
+    }
+
+    return false;
   } catch (error) {
     logger.error('Error handling counting game:', error);
     return false;

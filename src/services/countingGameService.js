@@ -178,6 +178,8 @@ const DEFAULT_COUNTING_GAME = {
   currentStreak: 0,
   bestStreak: 0,
   leaderboard: {},
+  onlyNumbers: false,
+  mathExpressions: false,
 };
 
 function normalizeCountingGame(state) {
@@ -276,6 +278,27 @@ export function isValidCountingMessage(content, config) {
     return trimmed.toUpperCase() === expected.toUpperCase();
   }
   return trimmed === expected;
+}
+
+export function validateCountingAttempt(content, config) {
+  const trimmed = content.trim();
+  if (!trimmed) return null;
+
+  const plain = parseInt(trimmed, 10);
+  const isExactNumber = String(plain) === trimmed;
+
+  if (isExactNumber) {
+    if (plain === config.nextNumber) return 'number';
+    return 'invalid'; // wrong number
+  }
+
+  if (config.mathExpressions) {
+    const mathSystem = COUNTING_SYSTEMS.math;
+    if (mathSystem.parse(trimmed) === config.nextNumber) return 'math';
+    if (/^[0-9+\-*/().=^ ]+$/.test(trimmed) && trimmed.includes('=')) return 'invalid'; // attempted math
+  }
+
+  return null; // not a counting attempt
 }
 
 export async function activateCountingGame(client, guildId, channelId, system = 'decimal') {
