@@ -65,12 +65,12 @@ export function categorizeError(error) {
         return ErrorTypes.NETWORK;
     }
 
-    if (message.includes('config') || message.includes('not found') || message.includes('invalid')) {
-        return ErrorTypes.CONFIGURATION;
-    }
-
     if (message.includes('validation') || message.includes('invalid') || message.includes('required')) {
         return ErrorTypes.VALIDATION;
+    }
+
+    if (message.includes('config') || message.includes('not found')) {
+        return ErrorTypes.CONFIGURATION;
     }
 
     return ErrorTypes.UNKNOWN;

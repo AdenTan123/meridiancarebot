@@ -149,29 +149,33 @@ export default {
 };
 
 async function handleSetup(interaction) {
-  const modal = new ModalBuilder()
-    .setCustomId('marizma_setup_modal')
-    .setTitle('Marizma Setup — Step 1');
+  try {
+    const modal = new ModalBuilder()
+      .setCustomId('marizma_setup_modal')
+      .setTitle('Marizma Setup — Step 1');
 
-  modal.addComponents(
-    new ActionRowBuilder().addComponents(
-      new TextInputBuilder()
-        .setCustomId('apiKey')
-        .setLabel('API Key')
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true),
-    ),
-    new ActionRowBuilder().addComponents(
-      new TextInputBuilder()
-        .setCustomId('baseUrl')
-        .setLabel('Base URL')
-        .setStyle(TextInputStyle.Short)
-        .setPlaceholder('https://maple-api.marizma.games')
-        .setRequired(true),
-    ),
-  );
+    modal.addComponents(
+      new ActionRowBuilder().addComponents(
+        new TextInputBuilder()
+          .setCustomId('apiKey')
+          .setLabel('API Key')
+          .setStyle(TextInputStyle.Short)
+          .setRequired(true),
+      ),
+      new ActionRowBuilder().addComponents(
+        new TextInputBuilder()
+          .setCustomId('baseUrl')
+          .setLabel('Base URL')
+          .setStyle(TextInputStyle.Short)
+          .setPlaceholder('https://maple-api.marizma.games')
+          .setRequired(true),
+      ),
+    );
 
-  await interaction.showModal(modal);
+    await interaction.showModal(modal);
+  } catch (err) {
+    await interaction.reply({ content: `❌ Failed to open setup form: ${err.message}`, ephemeral: true });
+  }
 }
 
 async function handleStartup(interaction, cfg) {
