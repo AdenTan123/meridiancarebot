@@ -29,14 +29,22 @@ function fillTemplate(template, host, cohost) {
     .replace(/\{cohost\}/g, cohost || 'None');
 }
 
-function buildSsuEmbed(title, description, color) {
-  return new EmbedBuilder()
+function buildSsuEmbed(title, description, color, guild) {
+  const embed = new EmbedBuilder()
     .setColor(color)
     .setTitle(title)
     .setDescription(description)
-    .setThumbnail('https://i.imgur.com/YourServerLogo.png')
-    .setFooter({ text: 'Marizma SSU System' })
     .setTimestamp();
+
+  const logoUrl = guild?.iconURL({ dynamic: true, size: 256 });
+  if (logoUrl) {
+    embed.setThumbnail(logoUrl);
+    embed.setFooter({ text: 'Marizma SSU System', iconURL: logoUrl });
+  } else {
+    embed.setThumbnail('https://i.imgur.com/YourServerLogo.png');
+    embed.setFooter({ text: 'Marizma SSU System' });
+  }
+  return embed;
 }
 
 async function purgeChannel(channel) {
@@ -150,26 +158,33 @@ export default {
 
 async function handleSetup(interaction) {
   try {
+    const cfg = await getMarizmaConfig(interaction.guildId);
+
+    const apiKeyInput = new TextInputBuilder()
+      .setCustomId('apiKey')
+      .setLabel('API Key')
+      .setStyle(TextInputStyle.Short)
+      .setRequired(true);
+
+    const baseUrlInput = new TextInputBuilder()
+      .setCustomId('baseUrl')
+      .setLabel('Base URL')
+      .setStyle(TextInputStyle.Short)
+      .setPlaceholder('https://maple-api.marizma.games')
+      .setRequired(true);
+
+    if (cfg) {
+      if (cfg.apiKey) apiKeyInput.setValue(cfg.apiKey);
+      if (cfg.baseUrl) baseUrlInput.setValue(cfg.baseUrl);
+    }
+
     const modal = new ModalBuilder()
       .setCustomId('marizma_setup_modal')
       .setTitle('Marizma Setup — Step 1');
 
     modal.addComponents(
-      new ActionRowBuilder().addComponents(
-        new TextInputBuilder()
-          .setCustomId('apiKey')
-          .setLabel('API Key')
-          .setStyle(TextInputStyle.Short)
-          .setRequired(true),
-      ),
-      new ActionRowBuilder().addComponents(
-        new TextInputBuilder()
-          .setCustomId('baseUrl')
-          .setLabel('Base URL')
-          .setStyle(TextInputStyle.Short)
-          .setPlaceholder('https://maple-api.marizma.games')
-          .setRequired(true),
-      ),
+      new ActionRowBuilder().addComponents(apiKeyInput),
+      new ActionRowBuilder().addComponents(baseUrlInput),
     );
 
     await interaction.showModal(modal);
@@ -205,6 +220,7 @@ async function handleStartup(interaction, cfg) {
     '🚀 SSU Session Started',
     `**Host:** ${host}\n**Co-host:** ${cohost || 'None'}\n\nGet in-game and enjoy!`,
     Colors.Green,
+    interaction.guild,
   );
   await channel.send({ embeds: [embed] });
 
@@ -228,8 +244,8 @@ async function handleShutdown(interaction, cfg) {
     if (channel) {
       await purgeChannel(channel);
       const shutdownMsg = fillTemplate(cfg.shutdownTemplate, 'Server', '');
-      await channel.send(shutdownMsg);
-      await channel.send({ embeds: [buildSsuEmbed('🛑 Server Shut Down', 'The Roblox server has been shut down.', Colors.Red)] });
+      const embed = buildSsuEmbed('🛑 Server Shut Down', shutdownMsg, Colors.Red, interaction.guild);
+      await channel.send({ embeds: [embed] });
     }
   }
 
