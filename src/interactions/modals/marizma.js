@@ -54,9 +54,9 @@ const step2Handler = {
 
     const config = {
       ...(existing || {}),
-      startupTemplate: raw.getTextInputValue('startupTemplate') || 'SSU is now live! Host: {host}, Co-host: {cohost}',
-      shutdownTemplate: raw.getTextInputValue('shutdownTemplate') || 'The SSU session has ended. Thank you for participating!',
-      sessionsChannel: raw.getTextInputValue('sessionsChannel') || null,
+      startupTemplate: raw.getTextInputValue('startupTemplate') || existing?.startupTemplate || 'SSU is now live! Host: {host}, Co-host: {cohost}',
+      shutdownTemplate: raw.getTextInputValue('shutdownTemplate') || existing?.shutdownTemplate || 'The SSU session has ended. Thank you for participating!',
+      sessionsChannel: raw.getTextInputValue('sessionsChannel') || existing?.sessionsChannel || null,
     };
 
     if (config.sessionsChannel) {
