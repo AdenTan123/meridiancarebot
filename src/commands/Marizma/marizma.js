@@ -224,7 +224,7 @@ async function handleStartup(interaction, cfg) {
   );
   await channel.send({ embeds: [embed] });
 
-  await interaction.editReply({ content: '✅ SSU startup complete.' });
+  await interaction.editReply({ embeds: [successEmbed('✅ SSU Startup Complete', 'The SSU session has been successfully started.')] });
 }
 
 async function handleShutdown(interaction, cfg) {
@@ -249,7 +249,7 @@ async function handleShutdown(interaction, cfg) {
     }
   }
 
-  await interaction.editReply({ content: '✅ Server shutdown complete.' });
+  await interaction.editReply({ embeds: [successEmbed('✅ Server Shutdown Complete', 'The Roblox server has been successfully shut down.')] });
 }
 
 async function handleServerInfo(interaction, cfg) {

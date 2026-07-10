@@ -12,8 +12,10 @@ const step1Handler = {
   async execute(interaction) {
     const guildId = interaction.guildId;
     const raw = interaction.fields;
+    const existing = await getMarizmaConfig(guildId);
 
     const partial = {
+      ...(existing || {}),
       apiKey: raw.getTextInputValue('apiKey'),
       baseUrl: raw.getTextInputValue('baseUrl'),
     };
